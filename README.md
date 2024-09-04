@@ -4,6 +4,27 @@ Download all your kindle books script.
 
 ![image](https://user-images.githubusercontent.com/15976103/172113700-7be0ae1f-1aae-4b50-8377-13047c63411b.png)
 
+## **2024.01 亚马逊关了中国商店首页，你可以访问这个链接下载书 https://www.amazon.cn/hz/mycd/myx#/home/content/booksAll/dateDsc/**
+
+## 2023.06.26 如果你没有 kindle 实体设备可以用以下命令，下载后的 epub 在 EPUB 文件夹内。
+
+遇到 `AttributeError: 'NoneType' object has no attribute 'url'` 问题可用参考这个 https://github.com/yihong0618/Kindle_download_helper/issues/155#issuecomment-1928677849
+```console
+pip3 install -r requirements.txt
+python no_kindle.py -e ${email} -p ${password}
+
+# 如果你想下载推送的书
+python no_kindle.py -e ${email} -p ${password} --pdoc
+
+# !!!!!! 亚马逊下架了中国区 web 商城，这个不好用了。
+# 你可以生成所有你电子书的购买记录，笔记记录来分析展示
+python no_kindle.py -e ${email} -p ${password} --memory
+
+# 支持导出全部标记书签及阅读信息（Clipping 信息）#153
+python no_kindle.py -e ${email} -p ${password} --bookmark
+
+```
+
 
 ## 安装 Kindle_download_helper
 
@@ -39,31 +60,31 @@ pip3 install -r requirements.txt
 ```
 
 ```python
-python3 kindle.py --h  #查看使用参数
+python kindle.py -h # 查看使用参数
 
-usage: kindle.py [-h] [--cookie COOKIE | --cookie-file COOKIE_FILE] [--cn] [--jp] [--de] [--resume-from INDEX]
-                 [--cut-length CUT_LENGTH] [-o OUTDIR] [-od OUTDEDRMDIR] [-s SESSION_FILE] [--pdoc] [--resolve_duplicate_names]
-                 [--readme] [--dedrm] [--list]
+usage: kindle.py [-h] [--cookie COOKIE | --cookie-file COOKIE_FILE] [--cn] [--jp] [--de] [--uk] [--resume-from INDEX] [--cut-length CUT_LENGTH] [-o OUTDIR] [-od OUTDEDRMDIR] [-s SESSION_FILE] [--pdoc]
+                 [--resolve_duplicate_names] [--readme] [--dedrm] [--list] [--device_sn DEVICE_SN] [--mode MODE]
                  [csrf_token]
 
 positional arguments:
   csrf_token            amazon or amazon cn csrf token
 
-options:
+optional arguments:
   -h, --help            show this help message and exit
   --cookie COOKIE       amazon or amazon cn cookie
   --cookie-file COOKIE_FILE
                         load cookie local file
   --cn                  if your account is an amazon.cn account
-  --jp                  if your account is an amazon.jp account
+  --jp                  if your account is an amazon.co.jp account
   --de                  if your account is an amazon.de account
+  --uk                  if your account is an amazon.co.uk account
   --resume-from INDEX   resume from the index if download failed
   --cut-length CUT_LENGTH
                         truncate the file name
   -o OUTDIR, --outdir OUTDIR
-                        dwonload output dir
+                        download output dir
   -od OUTDEDRMDIR, --outdedrmdir OUTDEDRMDIR
-                        dwonload output dedrm dir
+                        download output dedrm dir
   -s SESSION_FILE, --session-file SESSION_FILE
                         The reusable session dump file
   --pdoc                to download personal documents or ebook
@@ -72,6 +93,9 @@ options:
   --readme              If you want to generate kindle readme stats
   --dedrm               If you want to `dedrm` directly
   --list                just list books/pdoc, not to download
+  --device_sn DEVICE_SN
+                        Download file for device with this serial number
+  --mode MODE           Mode of download, all : download all files at once, sel: download selected files
 ```
 
 
@@ -90,10 +114,37 @@ python3 kindle.py ${csrfToken} --cookie ${cookie} --dedrm --cn #下载国区 Kin
 python3 kindle.py ${csrfToken} --cookie ${cookie} --dedrm #下载美区 Kindle 书籍
 ```
 
+默认下载所有文件，可以输入如下命令行来手动选择需要下载的书籍
+
+```python
+python3 kindle.py --mode sel # "python3 kindle.py --pdoc --mode sel" for personal document
+```
+
+等程序获取到书籍列表后，程序会要求输入要下载的书籍序号：
+
+``` string
+Input the index of books you want to download, split by space (q to quit, l to list books).
+```
+
+此时，在命令行中输入字母"q"，然后回车则会退出下载；输入字母"l"，再回车则会重新输出所有书籍列表。
+如要下载书籍，查看该书籍对应的 Index，然后在命令行输入（假设想下载第7，10，20本书）：
+
+``` string
+7 10 20
+```
+
+用空格隔开，最后回车即可。输入还支持range，比如输入
+
+``` string
+4 5 10:12 15
+```
+
+此时程序会下载第4，5，10，11，12，15本书籍。
+
 ### 获取 cookie
 
 若默认情况下提示 cookie 无效，你也可以手动输入 cookie。
-在上述 [全部书籍](https://www.amazon.cn/hz/mycd/myx#/home/content/booksAll/dateDsc/) 列表页面，按 `F12` 或右键点击——检查，进入网络面板 (Network)，找到任意一个 `ajax` 请求，复制请求头里的 `Cookie` 即可。同时也能在 Payload 里找到 `csrfToken`。
+在上述 [全部书籍](https://www.amazon.cn/hz/mycd/myx#/home/content/booksAll/dateDsc/) 列表页面，按 `F12` 或右键点击——检查，进入网络面板 (Network)，在 Name 栏找到任意一个 `ajax` 请求，右键复制 Request Headers 里的 `Cookie` 即可。同时也能在 Payload 里找到 `csrfToken`。
 
 然后，执行
 
@@ -139,16 +190,24 @@ python3 kindle.py --cn --cookie ${cookie} ${csrfToken}
 
 ### how to `amazon.de`
 
-1. login amazon.com
+1. login amazon.de
 2. visit <https://www.amazon.de/hz/mycd/myx#/home/content/booksAll/dateDsc/>
 3. right click this page source then find `csrfToken` value copy
 4. run: `python3 kindle.py --de`
 5. if is doc file `python3 kindle.py --de --pdoc`
 
+### how to `amazon.co.uk`
+
+1. login amazon.co.uk
+2. visit <https://www.amazon.co.uk/hz/mycd/myx#/home/content/booksAll/dateDsc/>
+3. right click this page source then find `csrfToken` value copy
+4. run: `python3 kindle.py --uk`
+5. if is doc file `python3 kindle.py --uk --pdoc`
+
 ### `amazon.jp` を使用する
 
 1. amazon.co.jp にログインする。
-2. ホームページ <https://www.amazon.jp/hz/mycd/myx#/home/content/booksAll/dateDsc/>）にアクセスする。
+2. ホームページ <https://www.amazon.co.jp/hz/mycd/myx#/home/content/booksAll/dateDsc/>）にアクセスする。
 3. ソースコード上で右クリックし、`csrfToken`を検索して、それ以降の値をコピーします。
 4. `python3 kindle.py --jp` を実行する。
 5. プッシュファイルをダウンロードする場合 `python3 kindle.py --jp --pdoc`
@@ -162,12 +221,19 @@ python3 kindle.py --cn --cookie ${cookie} ${csrfToken}
 - 如果你用 [DeDRM_tools](https://github.com/apprenticeharper/DeDRM_tools) 解密 key 存在 key.txt 里
 - 或者直接拖进 Calibre 里 please google it.
 - 如果过程中失败了可以使用 e.g. `--resume-from ${num}`
-- 如果出现名字太长的报错可以增加：`--cut-length 80` 来截断文件名
+- 如果出现名字太长的报错可以增加：`--cut-length 70` 来截断文件名
 - 支持推送文件下载 `--pdoc`
 - 如果有很多同名 pdoc 或 book 可以使用 `--resolve_duplicate_names` 解决同名冲突
 - error log 记录在 .error_books.log 中
 - 支持生成最近读完书的 README `--readme` 生成的文件在 `my_kindle_stats.md` 中
 - 支持 mobi 类型的文件直接 dedrm `--dedrm` 生成的文件在 `DEDRMS` 里
+- 脚本 `dedrm.py` 用于单独解密已下载的电子书文件，默认同时输出 azw 和 epub 两种格式
+
+```
+# 其中后 3 个参数，仅在必要时指定，用法 python3 dedrm.py 1源目录 2目标目录 3密钥 4输出格式
+#   例如对 ebook 中的文件解密，并只生成 epub 格式的 dedrm 文件
+$ python3 dedrm.py ebook DeDRMed key.txt中的密钥串 epub
+```
 
 ## Note
 
@@ -176,7 +242,7 @@ python3 kindle.py --cn --cookie ${cookie} ${csrfToken}
 - If you use [DeDRM_tools](https://github.com/apprenticeharper/DeDRM_tools) to decrypt the key, it will be stored in key.txt
 - or just drag it into Calibre. Please google it.
 - If the process fails you can use e.g. `--resume-from ${num}`
-- If the name is too long, you can add: `-cut-length 80` to truncate the file name
+- If the name is too long, you can add: `-cut-length 70` to truncate the file name
 - Support push file download `--pdoc`
 - If there are many pdocs or books with the same name, you can use `--resolve_duplicate_names` to resolve conflicts with the same name.
 - error log is logged in .error_books.log
@@ -187,7 +253,7 @@ python3 kindle.py --cn --cookie ${cookie} ${csrfToken}
 ## 贡献
 
 1. Any issues PR welcome
-2. `black kindle.py`
+2. `black kindle.py kindle_gui.py`
 
 ## 感谢
 
@@ -195,6 +261,7 @@ python3 kindle.py --cn --cookie ${cookie} ${csrfToken}
 - @[DeDRM_tools](https://github.com/apprenticeharper/DeDRM_tools)
 - @[frostming](https://github.com/frostming) GUI and a lot of work
 - @[bladewang](https://github.com/bladewang) PDOC download
+- @[athrowaway2021](https://github.com/athrowaway2021/comix) No need to have a real kindle
 
 ## 赞赏
 

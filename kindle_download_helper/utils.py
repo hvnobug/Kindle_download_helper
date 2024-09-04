@@ -1,4 +1,5 @@
 import re
+
 from kindle_download_helper.config import GITHUB_README_COMMENTS
 
 
@@ -15,3 +16,10 @@ def replace_readme_comments(file_name, comment_str, comments_name):
         f.seek(0)
         f.write(text)
         f.truncate()
+
+
+def trim_title_suffix(title):
+    new_title = re.sub(r"(（[^）]+）?|【[^】]+】?)", "", title)
+    for ch in '\/:*?"<>|':
+        new_title = new_title.replace(ch, "-")
+    return new_title

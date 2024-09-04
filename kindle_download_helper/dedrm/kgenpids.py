@@ -9,9 +9,8 @@ __version__ = "3.0"
 
 import binascii
 import hashlib
-from struct import pack
 import traceback
-
+from struct import pack
 
 global charMap1
 global charMap3
@@ -21,6 +20,7 @@ global charMap4
 charMap1 = b"n5Pr6St7Uv8Wx9YzAb0Cd1Ef2Gh3Jk4M"
 charMap3 = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 charMap4 = b"ABCDEFGHIJKLMNPQRSTUVWXYZ123456789"
+
 
 # crypto digestroutines
 def MD5(message):

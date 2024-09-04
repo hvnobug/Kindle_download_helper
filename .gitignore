@@ -130,3 +130,16 @@ dmypy.json
 .pyre/
 
 .kindle_session
+
+# remove MacOS .DS_Store
+.DS_Store
+EPUB/
+DOWNLOADS/
+.device_id
+.device_id.com
+.tokens
+.tokens.com
+*.csv
+my_kindle_stats.md
+pdocs_bookmark.json
+ebooks_bookmark.json

@@ -21,9 +21,9 @@ jobs:
           - os: macos
             filetag: macos-x86_64
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.9"
           cache: "pip"
@@ -36,15 +36,19 @@ jobs:
           python -m pip install -U -r requirements.txt -r requirements_gui.txt
           mkdir downloads
 
+      - name: Write version file
+        run: |
+          echo "__version__ = '${{ github.ref_name }}'" > gui/__version__.py
+
       - name: Make executable windows
         if: matrix.os == 'windows'
         run: |
-          pyinstaller --onefile --clean --windowed --icon=resource/kindle.ico kindle_download_helper.py
+          pyinstaller --onefile --clean --windowed --icon=resource/kindle.ico -n kindle_download_helper kindle_gui.py
 
       - name: Make executable linux
         if: matrix.os != 'windows'
         run: |
-          pyinstaller --onefile --clean --windowed --icon=resource/kindle.icns kindle_download_helper.py
+          pyinstaller --onefile --clean --windowed --icon=resource/kindle.icns -n kindle_download_helper kindle_gui.py
 
       - name: Make dist(MacOS)
         if: matrix.os == 'macos'
@@ -78,7 +82,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Get Dists
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: dist
           path: dist
@@ -87,3 +91,12 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: dist/*
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Generate Release Notes
+        run: npx changelogithub
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
